@@ -29,23 +29,25 @@ router.post('/check_timer', async function (req, res, next) {
     await db.all(sql, [], async (err, rows) => {
       // process the row here 
       var db_hour = rows[0].duration;
-      console.log("Mailing Interval",db_hour);
+      console.log("Mailing Interval", db_hour);
       var ending_timestamp = date.setHours(date.getHours() + db_hour);
       console.log("Ending Timestamp", ending_timestamp);
       end_request_time = ending_timestamp;
+      await db.close();
+      res.json({ "Response": "Wait", "Hours": db_hour });
     });
-    res.json({ "Response": "Wait" });
+
     // closing the database
-    await db.close();
+
   }
   else {
     console.log("start and ending already exit in API.");
-    console.log("end_request_time",end_request_time);
+    console.log("end_request_time", end_request_time);
     var date = new Date();
     var current_timestamp = date.getTime();
     var difference = end_request_time - current_timestamp;
     console.log("difference", difference);
-    var minutesDifference = Math.floor(difference/1000/60);
+    var minutesDifference = Math.floor(difference / 1000 / 60);
     console.log("difference In Minutes:", minutesDifference);
     if (difference <= 0) {
       console.log("\n------Time Difference is 0, You can publish your mail now------");
@@ -54,8 +56,22 @@ router.post('/check_timer', async function (req, res, next) {
       res.json({ "Response": "Success" });
     }
     else {
-      console.log("\n-----Wait because, Time difference is still greater than 0. ----");
-      res.json({ "Response": "Wait" });
+      // connecting to the database
+      var db = new sqlite3.Database(__basedir + '/Analyst_Db.db', (err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Connected to database.');
+      });
+      var sql = 'SELECT * FROM mailing_Interval LIMIT 1';
+      await db.all(sql, [], async (err, rows) => {
+        // process the row here 
+        var db_hour = rows[0].duration;
+        console.log("Mailing Interval", db_hour);
+        await db.close();
+        console.log("\n-----Wait because, Time difference is still greater than 0. ----");
+        res.json({ "Response": "Wait", "Hours": db_hour });
+      });
     }
   }
 });

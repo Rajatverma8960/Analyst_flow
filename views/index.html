@@ -111,7 +111,7 @@ div#mail_header {
         <h4 class="modal-title" style='font-weight: bold;'>Procedure - Publish Rating Actions</h4>
       </div>
       <div class="modal-body">
-        <p>You Can't Publish Until 2 Business Hours(At Issuer) Have Expired, Unless You Receive Confirming Language.</p>
+        <p id="dymanic_msg"></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
@@ -182,6 +182,9 @@ function check_timer(){
         //----  
         console.log("RESULTS : ",result.Response);
         if(result.Response == "Wait"){
+            var msg = "You Can't Publish Until "+result.Hours+" Business Hours(At Issuer) Have Expired, Unless You Receive Confirming Language.";
+            console.log("Dynamic Msg : ",msg);
+            $("#dymanic_msg").text(msg);
             $('#myModal_publish_fail').modal('show');
         }
         else{
